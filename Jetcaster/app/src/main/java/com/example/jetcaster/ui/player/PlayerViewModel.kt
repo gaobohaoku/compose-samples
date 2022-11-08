@@ -29,14 +29,17 @@ import androidx.savedstate.SavedStateRegistryOwner
 import com.example.jetcaster.Graph
 import com.example.jetcaster.data.EpisodeStore
 import com.example.jetcaster.data.PodcastStore
+import java.time.Duration
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.time.Duration
 
 data class PlayerUiState(
     val title: String = "",
+    val subTitle: String = "",
     val duration: Duration? = null,
     val podcastName: String = "",
+    val author: String = "",
+    val summary: String = "",
     val podcastImageUrl: String = ""
 )
 
@@ -64,6 +67,7 @@ class PlayerViewModel(
                 title = episode.title,
                 duration = episode.duration,
                 podcastName = podcast.title,
+                summary = episode.summary ?: "",
                 podcastImageUrl = podcast.imageUrl ?: ""
             )
         }
@@ -81,7 +85,7 @@ class PlayerViewModel(
         ): AbstractSavedStateViewModelFactory =
             object : AbstractSavedStateViewModelFactory(owner, defaultArgs) {
                 @Suppress("UNCHECKED_CAST")
-                override fun <T : ViewModel?> create(
+                override fun <T : ViewModel> create(
                     key: String,
                     modelClass: Class<T>,
                     handle: SavedStateHandle

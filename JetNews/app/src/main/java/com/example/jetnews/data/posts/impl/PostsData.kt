@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 The Android Open Source Project
+ * Copyright 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+@file:Suppress("ktlint:max-line-length") // String constants read better
 package com.example.jetnews.data.posts.impl
 
 import com.example.jetnews.R
@@ -24,6 +25,7 @@ import com.example.jetnews.model.Paragraph
 import com.example.jetnews.model.ParagraphType
 import com.example.jetnews.model.Post
 import com.example.jetnews.model.PostAuthor
+import com.example.jetnews.model.PostsFeed
 import com.example.jetnews.model.Publication
 
 /**
@@ -1012,16 +1014,18 @@ val post5 = Post(
     imageThumbId = R.drawable.post_5_thumb
 )
 
-val posts: List<Post> =
-    listOf(
-        post1,
-        post2,
-        post3,
-        post4,
-        post5,
-        post1.copy(id = "post6"),
-        post2.copy(id = "post7"),
-        post3.copy(id = "post8"),
-        post4.copy(id = "post9"),
-        post5.copy(id = "post10")
+val posts: PostsFeed =
+    PostsFeed(
+        highlightedPost = post4,
+        recommendedPosts = listOf(post1, post2, post3),
+        popularPosts = listOf(
+            post5,
+            post1.copy(id = "post6"),
+            post2.copy(id = "post7")
+        ),
+        recentPosts = listOf(
+            post3.copy(id = "post8"),
+            post4.copy(id = "post9"),
+            post5.copy(id = "post10")
+        )
     )
