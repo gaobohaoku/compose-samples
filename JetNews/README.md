@@ -3,15 +3,15 @@ Jetnews is a sample news reading app, built with
 [Jetpack Compose](https://developer.android.com/jetpack/compose). The goal of the sample is to
 showcase the current UI capabilities of Compose.
 
-To try out this sample app, you need to use 
-[Android Studio Chipmunk](https://developer.android.com/studio).
+To try out this sample app, use the latest stable version
+of [Android Studio](https://developer.android.com/studio).
 You can clone this repository or import the
 project from Android Studio following the steps
 [here](https://developer.android.com/jetpack/compose/setup#sample).
 
 ## Screenshots
 
-<img src="screenshots/jetnews_demo.gif" alt="Screenshot">
+<img src="screenshots/screenshots.png" alt="Screenshot">
 
 ## Features
 
@@ -70,6 +70,23 @@ on and off, light and dark version in the Android Studio Preview.
 
 [7]: app/src/main/java/com/example/jetnews/ui/interests
 [8]: app/src/main/java/com/example/jetnews/ui/interests/SelectTopicButton.kt
+
+### AppWidget powered by Glance
+
+Package [`com.example.jetnews.glance`][9]
+
+This package shows how to use Glance and write compose style code for AppWidgets.
+
+See how to:
+* Use `Row`, `Column`, `LazyColumn` to arrange the contents of the UI
+* Use a repository from your existing app to load data for the widget and perform updates
+* Configure `android:updatePeriodMillis` to periodically refresh the widget
+* Use `androidx.glance:glance-material3` library to create a custom color scheme with `GlanceTheme`
+and use dynamic colors when supported
+* Tint `Image`s to match the color scheme
+* Launch an activity on click using `actionStartActivity`
+
+[9]: app/src/main/java/com/example/jetnews/glance
 
 ### Data
 

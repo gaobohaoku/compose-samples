@@ -19,10 +19,11 @@ package com.example.jetnews.ui.home
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -50,16 +51,12 @@ import com.example.jetnews.ui.theme.JetnewsTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PostCardPopular(
-    post: Post,
-    navigateToArticle: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
+fun PostCardPopular(post: Post, navigateToArticle: (String) -> Unit, modifier: Modifier = Modifier) {
     Card(
         onClick = { navigateToArticle(post.id) },
         shape = MaterialTheme.shapes.medium,
         modifier = modifier
-            .size(280.dp, 240.dp)
+            .width(280.dp),
     ) {
         Column {
             Image(
@@ -68,7 +65,7 @@ fun PostCardPopular(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .height(100.dp)
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
             )
 
             Column(modifier = Modifier.padding(16.dp)) {
@@ -76,13 +73,14 @@ fun PostCardPopular(
                     text = post.title,
                     style = MaterialTheme.typography.headlineSmall,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
+                Spacer(modifier = Modifier.weight(1f))
                 Text(
                     text = post.metadata.author.name,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
                 )
 
                 Text(
@@ -90,10 +88,10 @@ fun PostCardPopular(
                         id = R.string.home_post_min_read,
                         formatArgs = arrayOf(
                             post.metadata.date,
-                            post.metadata.readTimeMinutes
-                        )
+                            post.metadata.readTimeMinutes,
+                        ),
                     ),
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
         }
@@ -103,9 +101,7 @@ fun PostCardPopular(
 @Preview("Regular colors")
 @Preview("Dark colors", uiMode = UI_MODE_NIGHT_YES)
 @Composable
-fun PreviewPostCardPopular(
-    @PreviewParameter(PostPreviewParameterProvider::class, limit = 1) post: Post
-) {
+fun PreviewPostCardPopular(@PreviewParameter(PostPreviewParameterProvider::class, limit = 1) post: Post) {
     JetnewsTheme {
         Surface {
             PostCardPopular(post, {})
@@ -115,9 +111,7 @@ fun PreviewPostCardPopular(
 
 @Preview("Regular colors, long text")
 @Composable
-fun PreviewPostCardPopularLongText(
-    @PreviewParameter(PostPreviewParameterProvider::class, limit = 1) post: Post
-) {
+fun PreviewPostCardPopularLongText(@PreviewParameter(PostPreviewParameterProvider::class, limit = 1) post: Post) {
     val loremIpsum =
         """
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras ullamcorper pharetra massa,
@@ -134,10 +128,10 @@ fun PreviewPostCardPopularLongText(
                     title = "Title$loremIpsum",
                     metadata = post.metadata.copy(
                         author = PostAuthor("Author: $loremIpsum"),
-                        readTimeMinutes = Int.MAX_VALUE
-                    )
+                        readTimeMinutes = Int.MAX_VALUE,
+                    ),
                 ),
-                {}
+                {},
             )
         }
     }
@@ -163,6 +157,6 @@ fun PreviewPostCardPopularLongText(
  */
 class PostPreviewParameterProvider : PreviewParameterProvider<Post> {
     override val values = sequenceOf(
-        post1, post2, post3, post4, post5
+        post1, post2, post3, post4, post5,
     )
 }

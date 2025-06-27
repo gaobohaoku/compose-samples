@@ -22,13 +22,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -43,17 +36,11 @@ class ConversationFragment : Fragment() {
 
     private val activityViewModel: MainViewModel by activityViewModels()
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View = ComposeView(inflater.context).apply {
-        layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
+        ComposeView(inflater.context).apply {
+            layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
 
-        setContent {
-            CompositionLocalProvider(
-                LocalBackPressedDispatcher provides requireActivity().onBackPressedDispatcher
-            ) {
+            setContent {
                 JetchatTheme {
                     ConversationContent(
                         uiState = exampleUiState,
@@ -62,21 +49,14 @@ class ConversationFragment : Fragment() {
                             val bundle = bundleOf("userId" to user)
                             findNavController().navigate(
                                 R.id.nav_profile,
-                                bundle
+                                bundle,
                             )
                         },
                         onNavIconPressed = {
                             activityViewModel.openDrawer()
                         },
-                        // Add padding so that we are inset from any navigation bars
-                        modifier = Modifier.windowInsetsPadding(
-                            WindowInsets
-                                .navigationBars
-                                .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
-                        )
                     )
                 }
             }
         }
-    }
 }

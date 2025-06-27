@@ -2,18 +2,21 @@
 
 JetLagged is a sample sleep tracking app built with [Jetpack Compose][compose].
 
-To try out this sample app, you need to use 
-[Android Studio](https://developer.android.com/studio).
+To try out this sample app, use the latest stable version
+of [Android Studio](https://developer.android.com/studio).
 You can clone this repository or import the
 project from Android Studio following the steps
 [here](https://developer.android.com/jetpack/compose/setup#sample).
 
 Features:
+* Medium complexity
 * Custom Layouts
 * Graphics: Custom Paths, Gradients, AGSL shaders
 * Animations
 
-<img src="screenshots/JetLagged_Full.png" alt="JetLagged" width="200"/>
+## Screenshots
+
+<img src="screenshots/screenshots.png" alt="JetLagged"/>
 
 ## License
 

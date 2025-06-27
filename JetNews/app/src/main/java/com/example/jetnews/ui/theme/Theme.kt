@@ -26,7 +26,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-private val LightColors = lightColorScheme(
+val LightColors = lightColorScheme(
     primary = md_theme_light_primary,
     onPrimary = md_theme_light_onPrimary,
     primaryContainer = md_theme_light_primaryContainer,
@@ -56,7 +56,7 @@ private val LightColors = lightColorScheme(
     surfaceTint = md_theme_light_surfaceTint,
 )
 
-private val DarkColors = darkColorScheme(
+val DarkColors = darkColorScheme(
     primary = md_theme_dark_primary,
     onPrimary = md_theme_dark_onPrimary,
     primaryContainer = md_theme_dark_primaryContainer,
@@ -87,10 +87,7 @@ private val DarkColors = darkColorScheme(
 )
 
 @Composable
-fun JetnewsTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
-) {
+fun JetnewsTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val colorScheme =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val context = LocalContext.current
@@ -103,6 +100,6 @@ fun JetnewsTheme(
         colorScheme = colorScheme,
         shapes = JetnewsShapes,
         typography = JetnewsTypography,
-        content = content
+        content = content,
     )
 }

@@ -24,6 +24,7 @@ import android.view.ViewGroup
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -62,11 +63,7 @@ class ProfileFragment : Fragment() {
     }
 
     @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val rootView: View = inflater.inflate(R.layout.fragment_profile, container, false)
 
         rootView.findViewById<ComposeView>(R.id.toolbar_compose_view).apply {
@@ -78,6 +75,8 @@ class ProfileFragment : Fragment() {
 
                 JetchatTheme {
                     JetchatAppBar(
+                        // Reset the minimum bounds that are passed to the root of a compose tree
+                        modifier = Modifier.wrapContentSize(),
                         onNavIconPressed = { activityViewModel.openDrawer() },
                         title = { },
                         actions = {
@@ -91,9 +90,9 @@ class ProfileFragment : Fragment() {
                                     })
                                     .padding(horizontal = 12.dp, vertical = 16.dp)
                                     .height(24.dp),
-                                contentDescription = stringResource(id = R.string.more_options)
+                                contentDescription = stringResource(id = R.string.more_options),
                             )
-                        }
+                        },
                     )
                 }
             }
@@ -110,7 +109,7 @@ class ProfileFragment : Fragment() {
                     } else {
                         ProfileScreen(
                             userData = userData!!,
-                            nestedScrollInteropConnection = nestedScrollInteropConnection
+                            nestedScrollInteropConnection = nestedScrollInteropConnection,
                         )
                     }
                 }

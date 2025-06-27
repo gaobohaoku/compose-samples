@@ -18,26 +18,29 @@
 
 package com.example.compose.jetchat.conversation
 
+import android.content.ClipDescription
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.draganddrop.dragAndDropTarget
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.add
-import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFrom
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -53,6 +56,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -67,7 +72,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draganddrop.DragAndDropEvent
+import androidx.compose.ui.draganddrop.DragAndDropTarget
+import androidx.compose.ui.draganddrop.mimeTypes
+import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LastBaseline
@@ -94,13 +104,13 @@ import kotlinx.coroutines.launch
  * @param modifier [Modifier] to apply to this layout node
  * @param onNavIconPressed Sends an event up when the user clicks on the menu
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ConversationContent(
     uiState: ConversationUiState,
     navigateToProfile: (String) -> Unit,
     modifier: Modifier = Modifier,
-    onNavIconPressed: () -> Unit = { }
+    onNavIconPressed: () -> Unit = { },
 ) {
     val authorMe = stringResource(R.string.author_me)
     val timeNow = stringResource(id = R.string.now)
@@ -110,55 +120,114 @@ fun ConversationContent(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topBarState)
     val scope = rememberCoroutineScope()
 
-    Surface(modifier = modifier) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
-            ) {
-                Messages(
-                    messages = uiState.messages,
-                    navigateToProfile = navigateToProfile,
-                    modifier = Modifier.weight(1f),
-                    scrollState = scrollState
+    var background by remember {
+        mutableStateOf(Color.Transparent)
+    }
+
+    var borderStroke by remember {
+        mutableStateOf(Color.Transparent)
+    }
+
+    val dragAndDropCallback = remember {
+        object : DragAndDropTarget {
+            override fun onDrop(event: DragAndDropEvent): Boolean {
+                val clipData = event.toAndroidDragEvent().clipData
+
+                if (clipData.itemCount < 1) {
+                    return false
+                }
+
+                uiState.addMessage(
+                    Message(authorMe, clipData.getItemAt(0).text.toString(), timeNow),
                 )
-                UserInput(
-                    onMessageSent = { content ->
-                        uiState.addMessage(
-                            Message(authorMe, content, timeNow)
-                        )
-                    },
-                    resetScroll = {
-                        scope.launch {
-                            scrollState.scrollToItem(0)
-                        }
-                    },
-                    // Use navigationBarsPadding() imePadding() and , to move the input panel above both the
-                    // navigation bar, and on-screen keyboard (IME)
-                    modifier = Modifier
-                        .navigationBarsPadding()
-                        .imePadding(),
-                )
+
+                return true
             }
-            // Channel name bar floats above the messages
+
+            override fun onStarted(event: DragAndDropEvent) {
+                super.onStarted(event)
+                borderStroke = Color.Red
+            }
+
+            override fun onEntered(event: DragAndDropEvent) {
+                super.onEntered(event)
+                background = Color.Red.copy(alpha = .3f)
+            }
+
+            override fun onExited(event: DragAndDropEvent) {
+                super.onExited(event)
+                background = Color.Transparent
+            }
+
+            override fun onEnded(event: DragAndDropEvent) {
+                super.onEnded(event)
+                background = Color.Transparent
+                borderStroke = Color.Transparent
+            }
+        }
+    }
+
+    Scaffold(
+        topBar = {
             ChannelNameBar(
                 channelName = uiState.channelName,
                 channelMembers = uiState.channelMembers,
                 onNavIconPressed = onNavIconPressed,
                 scrollBehavior = scrollBehavior,
             )
+        },
+        // Exclude ime and navigation bar padding so this can be added by the UserInput composable
+        contentWindowInsets = ScaffoldDefaults
+            .contentWindowInsets
+            .exclude(WindowInsets.navigationBars)
+            .exclude(WindowInsets.ime),
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+    ) { paddingValues ->
+        Column(
+            Modifier.fillMaxSize().padding(paddingValues)
+                .background(color = background)
+                .border(width = 2.dp, color = borderStroke)
+                .dragAndDropTarget(shouldStartDragAndDrop = { event ->
+                    event
+                        .mimeTypes()
+                        .contains(
+                            ClipDescription.MIMETYPE_TEXT_PLAIN,
+                        )
+                }, target = dragAndDropCallback),
+        ) {
+            Messages(
+                messages = uiState.messages,
+                navigateToProfile = navigateToProfile,
+                modifier = Modifier.weight(1f),
+                scrollState = scrollState,
+            )
+            UserInput(
+                onMessageSent = { content ->
+                    uiState.addMessage(
+                        Message(authorMe, content, timeNow),
+                    )
+                },
+                resetScroll = {
+                    scope.launch {
+                        scrollState.scrollToItem(0)
+                    }
+                },
+                // let this element handle the padding so that the elevation is shown behind the
+                // navigation bar
+                modifier = Modifier.navigationBarsPadding().imePadding(),
+            )
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChannelNameBar(
     channelName: String,
     channelMembers: Int,
     modifier: Modifier = Modifier,
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    onNavIconPressed: () -> Unit = { }
+    onNavIconPressed: () -> Unit = { },
 ) {
     var functionalityNotAvailablePopupShown by remember { mutableStateOf(false) }
     if (functionalityNotAvailablePopupShown) {
@@ -173,13 +242,13 @@ fun ChannelNameBar(
                 // Channel name
                 Text(
                     text = channelName,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
                 )
                 // Number of members
                 Text(
                     text = stringResource(R.string.members, channelMembers),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         },
@@ -192,7 +261,7 @@ fun ChannelNameBar(
                     .clickable(onClick = { functionalityNotAvailablePopupShown = true })
                     .padding(horizontal = 12.dp, vertical = 16.dp)
                     .height(24.dp),
-                contentDescription = stringResource(id = R.string.search)
+                contentDescription = stringResource(id = R.string.search),
             )
             // Info icon
             Icon(
@@ -202,21 +271,16 @@ fun ChannelNameBar(
                     .clickable(onClick = { functionalityNotAvailablePopupShown = true })
                     .padding(horizontal = 12.dp, vertical = 16.dp)
                     .height(24.dp),
-                contentDescription = stringResource(id = R.string.info)
+                contentDescription = stringResource(id = R.string.info),
             )
-        }
+        },
     )
 }
 
 const val ConversationTestTag = "ConversationTestTag"
 
 @Composable
-fun Messages(
-    messages: List<Message>,
-    navigateToProfile: (String) -> Unit,
-    scrollState: LazyListState,
-    modifier: Modifier = Modifier
-) {
+fun Messages(messages: List<Message>, navigateToProfile: (String) -> Unit, scrollState: LazyListState, modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
     Box(modifier = modifier) {
 
@@ -224,14 +288,9 @@ fun Messages(
         LazyColumn(
             reverseLayout = true,
             state = scrollState,
-            // Add content padding so that the content can be scrolled (y-axis)
-            // below the status bar + app bar
-            // TODO: Get height from somewhere
-            contentPadding =
-            WindowInsets.statusBars.add(WindowInsets(top = 90.dp)).asPaddingValues(),
             modifier = Modifier
                 .testTag(ConversationTestTag)
-                .fillMaxSize()
+                .fillMaxSize(),
         ) {
             for (index in messages.indices) {
                 val prevAuthor = messages.getOrNull(index - 1)?.author
@@ -257,7 +316,7 @@ fun Messages(
                         msg = content,
                         isUserMe = content.author == authorMe,
                         isFirstMessageByAuthor = isFirstMessageByAuthor,
-                        isLastMessageByAuthor = isLastMessageByAuthor
+                        isLastMessageByAuthor = isLastMessageByAuthor,
                     )
                 }
             }
@@ -285,7 +344,7 @@ fun Messages(
                     scrollState.animateScrollToItem(0)
                 }
             },
-            modifier = Modifier.align(Alignment.BottomCenter)
+            modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
 }
@@ -296,7 +355,7 @@ fun Message(
     msg: Message,
     isUserMe: Boolean,
     isFirstMessageByAuthor: Boolean,
-    isLastMessageByAuthor: Boolean
+    isLastMessageByAuthor: Boolean,
 ) {
     val borderColor = if (isUserMe) {
         MaterialTheme.colorScheme.primary
@@ -333,7 +392,7 @@ fun Message(
             authorClicked = onAuthorClick,
             modifier = Modifier
                 .padding(end = 16.dp)
-                .weight(1f)
+                .weight(1f),
         )
     }
 }
@@ -345,7 +404,7 @@ fun AuthorAndTextMessage(
     isFirstMessageByAuthor: Boolean,
     isLastMessageByAuthor: Boolean,
     authorClicked: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
         if (isLastMessageByAuthor) {
@@ -371,14 +430,14 @@ private fun AuthorNameTimestamp(msg: Message) {
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier
                 .alignBy(LastBaseline)
-                .paddingFrom(LastBaseline, after = 8.dp) // Space to 1st bubble
+                .paddingFrom(LastBaseline, after = 8.dp), // Space to 1st bubble
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = msg.timestamp,
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.alignBy(LastBaseline),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -390,14 +449,14 @@ fun DayHeader(dayString: String) {
     Row(
         modifier = Modifier
             .padding(vertical = 8.dp, horizontal = 16.dp)
-            .height(16.dp)
+            .height(16.dp),
     ) {
         DayHeaderLine()
         Text(
             text = dayString,
             modifier = Modifier.padding(horizontal = 16.dp),
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         DayHeaderLine()
     }
@@ -409,16 +468,12 @@ private fun RowScope.DayHeaderLine() {
         modifier = Modifier
             .weight(1f)
             .align(Alignment.CenterVertically),
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
     )
 }
 
 @Composable
-fun ChatItemBubble(
-    message: Message,
-    isUserMe: Boolean,
-    authorClicked: (String) -> Unit
-) {
+fun ChatItemBubble(message: Message, isUserMe: Boolean, authorClicked: (String) -> Unit) {
 
     val backgroundBubbleColor = if (isUserMe) {
         MaterialTheme.colorScheme.primary
@@ -429,12 +484,12 @@ fun ChatItemBubble(
     Column {
         Surface(
             color = backgroundBubbleColor,
-            shape = ChatBubbleShape
+            shape = ChatBubbleShape,
         ) {
             ClickableMessage(
                 message = message,
                 isUserMe = isUserMe,
-                authorClicked = authorClicked
+                authorClicked = authorClicked,
             )
         }
 
@@ -442,13 +497,13 @@ fun ChatItemBubble(
             Spacer(modifier = Modifier.height(4.dp))
             Surface(
                 color = backgroundBubbleColor,
-                shape = ChatBubbleShape
+                shape = ChatBubbleShape,
             ) {
                 Image(
                     painter = painterResource(it),
                     contentScale = ContentScale.Fit,
                     modifier = Modifier.size(160.dp),
-                    contentDescription = stringResource(id = R.string.attached_image)
+                    contentDescription = stringResource(id = R.string.attached_image),
                 )
             }
         }
@@ -456,16 +511,12 @@ fun ChatItemBubble(
 }
 
 @Composable
-fun ClickableMessage(
-    message: Message,
-    isUserMe: Boolean,
-    authorClicked: (String) -> Unit
-) {
+fun ClickableMessage(message: Message, isUserMe: Boolean, authorClicked: (String) -> Unit) {
     val uriHandler = LocalUriHandler.current
 
     val styledMessage = messageFormatter(
         text = message.content,
-        primary = isUserMe
+        primary = isUserMe,
     )
 
     ClickableText(
@@ -483,7 +534,7 @@ fun ClickableMessage(
                         else -> Unit
                     }
                 }
-        }
+        },
     )
 }
 
@@ -493,14 +544,14 @@ fun ConversationPreview() {
     JetchatTheme {
         ConversationContent(
             uiState = exampleUiState,
-            navigateToProfile = { }
+            navigateToProfile = { },
         )
     }
 }
 
 @Preview
 @Composable
-fun channelBarPrev() {
+fun ChannelBarPrev() {
     JetchatTheme {
         ChannelNameBar(channelName = "composers", channelMembers = 52)
     }
@@ -513,5 +564,3 @@ fun DayHeaderPrev() {
 }
 
 private val JumpToBottomThreshold = 56.dp
-
-private fun ScrollState.atBottom(): Boolean = value == 0

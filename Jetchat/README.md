@@ -4,8 +4,8 @@
 
 Jetchat is a sample chat app built with [Jetpack Compose][compose].
 
-To try out this sample app, you need to use 
-[Android Studio Chipmunk](https://developer.android.com/studio)
+To try out this sample app, use the latest stable version
+of [Android Studio](https://developer.android.com/studio).
 You can clone this repository or import the
 project from Android Studio following the steps
 [here](https://developer.android.com/jetpack/compose/setup#sample).
@@ -23,7 +23,11 @@ This sample showcases:
 
 ## Screenshots
 
-<img src="screenshots/jetchat.gif"/>
+<img src="screenshots/screenshots.png"/>
+
+<img src="screenshots/widget.png" width="300"/>
+
+<img src="screenshots/widget_discoverability.png" width="300"/>
 
 ### Status: 🚧 In progress
 
@@ -39,7 +43,7 @@ The [ProfileFragment](app/src/main/java/com/example/compose/jetchat/profile/Prof
 [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel), served via [LiveData](https://developer.android.com/topic/libraries/architecture/livedata).
 
 ### Back button handling
-When the Emoji selector is shown, pressing back in the app closes it, intercepting any navigation events. This feature shows a way to integrate Compose and APIs from the Android Framework like [OnBackPressedDispatcherOwner](https://developer.android.com/reference/androidx/activity/OnBackPressedDispatcher) via [Ambients](https://developer.android.com/reference/kotlin/androidx/compose/Ambient). The implementation can be found in [ConversationUiState](app/src/main/java/com/example/compose/jetchat/conversation/BackHandler.kt).
+When the Emoji selector is shown, pressing back in the app closes it, intercepting any navigation events. The implementation can be found in [UserInput](app/src/main/java/com/example/compose/jetchat/conversation/UserInput.kt).
 
 ### Text Input and focus management
 When the Emoji panel is shown the keyboard must be hidden and vice versa. This is achieved with a combination of the [FocusRequester](https://developer.android.com/reference/kotlin/androidx/compose/ui/focus/FocusRequester) and [onFocusChanged](https://developer.android.com/reference/kotlin/androidx/compose/ui/focus/package-summary#(androidx.compose.ui.Modifier).onFocusChanged(kotlin.Function1)) APIs.
@@ -98,4 +102,3 @@ limitations under the License.
 ```
 
 [compose]: https://developer.android.com/jetpack/compose
-[coil-accompanist]: https://google.github.io/accompanist/coil/
